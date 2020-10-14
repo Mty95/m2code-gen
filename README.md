@@ -59,9 +59,12 @@ Being made with love by [Atwix team](https://www.atwix.com/) ❤️
 
 ## Changelog
 
+### 0.1.0
+
 - Ported dependencies to Symfony 5+
 - Remade module:new command
 - Added some classes from Staempfli\UniversalGenerator package
+- Support PHP 7.4+
 
 ## License
 
