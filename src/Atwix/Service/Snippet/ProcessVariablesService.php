@@ -17,7 +17,7 @@ class ProcessVariablesService
     /**
      * @param VarRegistry $variableRegistry
      *
-     * @return void []
+     * @return array
      */
     public function execute(VarRegistry $variableRegistry)
     {
@@ -32,8 +32,12 @@ class ProcessVariablesService
         // todo: decouple
         $moduleFullName = $result['moduleFullName'];
         $result['moduleNamespace'] = str_replace('_', '\\', $moduleFullName);
-        $result['vendorName'] = reset(explode('_', $moduleFullName, -1));
-        $result['moduleName'] = end(explode('_', $moduleFullName));
+
+        $array1 = explode('_', $moduleFullName, -1);
+        $result['vendorName'] = reset($array1);
+
+        $array = explode('_', $moduleFullName);
+        $result['moduleName'] = end($array);
 
         return $result;
     }

@@ -12,6 +12,9 @@ services:
   Atwix\:
     resource: '../Atwix/*'
 
+  App\:
+    resource: '../App/*'
+
   Atwix\System\Application:
     autowire: false
 

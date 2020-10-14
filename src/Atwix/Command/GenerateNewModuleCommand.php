@@ -24,7 +24,7 @@ class GenerateNewModuleCommand extends Command
     /**
      * @var string
      */
-    protected static $defaultName = 'module:new';
+    protected static $defaultName = 'module:old';
 
     /**
      * @var VarRegistry
@@ -57,7 +57,7 @@ class GenerateNewModuleCommand extends Command
      */
     protected function configure()
     {
-        $this->setName('module:new');
+        $this->setName('module:old');
         $this->setDescription('Create a new Magento 2 module');
 
         $this->addArgument(
@@ -72,7 +72,7 @@ class GenerateNewModuleCommand extends Command
             'app/code/'
         );
 
-        $this->addUsage('module:new Atwix_OrderComment');
+        $this->addUsage('module:old Atwix_OrderComment');
     }
 
     /**

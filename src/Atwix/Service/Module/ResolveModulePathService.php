@@ -17,7 +17,7 @@ class ResolveModulePathService
     /**
      * @var GetMagentoPathService
      */
-    protected $getMagentoPathService;
+    protected GetMagentoPathService $getMagentoPathService;
 
     /**
      * @param GetMagentoPathService $getMagentoPathService
@@ -28,12 +28,15 @@ class ResolveModulePathService
     }
 
     /**
+     * @param string $moduleName
+     * @param string $codePath
      * @return string
      */
     public function execute(string $moduleName, string $codePath = 'app/code/'): string
     {
         $modulePath = str_replace('_', DIRECTORY_SEPARATOR, $moduleName);
 
-        return rtrim($this->getMagentoPathService->execute($codePath) . DIRECTORY_SEPARATOR . $modulePath);
+        return rtrim($this->getMagentoPathService->execute($codePath));
+//        return rtrim($this->getMagentoPathService->execute($codePath) . DIRECTORY_SEPARATOR . $modulePath);
     }
 }

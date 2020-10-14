@@ -12,6 +12,9 @@ use Atwix\Processor\Snippet\TwigSnippetFileProcessor;
 use Atwix\Service\Module\ResolveModulePathService;
 use Atwix\System\Snippet\SnippetConfigLoader;
 use Atwix\System\VarRegistry;
+use Exception;
+use Mty95\Helper\IOHelper;
+use Mty95\Tasks\PropertiesTask;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -57,7 +60,8 @@ class GenerateSnippetService
         ResolveModulePathService $resolveModulePathService,
         TwigSnippetFileProcessor $twigSnippetFileProcessor,
         ProcessVariablesService $processVariablesService
-    ) {
+    )
+    {
         $this->snippetConfigLoader = $snippetConfigLoader;
         $this->resolveModulePathService = $resolveModulePathService;
         $this->container = $container;
@@ -69,9 +73,12 @@ class GenerateSnippetService
      * @param string $snippetName
      * @param VarRegistry $variableRegistry
      *
+     * @param PropertiesTask $propertiesTask
+     * @param IOHelper $io
      * @return void
+     * @throws Exception
      */
-    public function execute(string $snippetName, VarRegistry $variableRegistry)
+    public function execute(string $snippetName, VarRegistry $variableRegistry, PropertiesTask $propertiesTask, IOHelper $io)
     {
         $moduleName = $variableRegistry->get('module-full-name');
         $moduleRootDir = $variableRegistry->get('module-root-dir');
@@ -79,28 +86,93 @@ class GenerateSnippetService
         $modulePath = $this->resolveModulePathService->execute($moduleName, $moduleRootDir);
         $variables = $this->processVariablesService->execute($variableRegistry);
 
-        $snippetConfig = $this->snippetConfigLoader->load($snippetName);
+        $applierService = 'applier.copyFile';
+        $snippetTemplatePath = $snippetName;
+        $snippetFiles = $propertiesTask->getTemplateFilesHandler()->getTemplateFiles($snippetName);
+        $templatesDirPath = $propertiesTask->getTemplateFilesHandler()->getTemplateFilesHelper()->getBaseTemplateDir();
 
-        $snippetFiles = $snippetConfig['files'] ?? [];
-        $snippetTemplatePath = $snippetConfig['templatePath'] ?? null;
+        // Verificar todas la variables que sean required
+        // {{\s*([^{]*{([^{]*):\s*(.*?)}.*?|[^{]*)\s*}}
 
-        // validate generating snippet
-        foreach ($snippetFiles as $snippetFilePath => $snippetFileConfig) {
+        $templateVars = [];
 
+        foreach ($snippetFiles as $file) {
+            preg_match_all('/{+(.*?)}/', $file['content'], $matches);
+
+            foreach ($matches[1] as $var) {
+                $var = trim($var);
+
+                if (strpos($var, '|') !== false)
+                    continue;
+
+                $templateVars[] = $var;
+            }
         }
 
-        // apply snippet
-        foreach ($snippetFiles as $snippetFilePath => $snippetFileConfig) {
-            /** @var ApplierInterface $applier */
-            $applier = $this->container->get($snippetFileConfig['applier']);
-            $snippetFileTemplatePath = sprintf('%s/%s.twig', $snippetTemplatePath, $snippetFilePath);
+        $variablesKeys = array_keys($variables);
+
+        // check if variable is not passed
+        foreach ($templateVars as $var) {
+            if (!in_array($var, $variablesKeys)) {
+                $value = $io->ask(sprintf('Please write <options=bold>%s</>', $var), '');
+
+                $variableRegistry->set($var, $value);
+                $variables = $this->processVariablesService->execute($variableRegistry);
+                $variablesKeys = array_keys($variables);
+            }
+        }
+
+        foreach ($snippetFiles as $file) {
+            $applier = $this->container->get($applierService);
+            $snippetFileTemplatePath = str_replace($templatesDirPath, '', $file['template_path']);
 
             $renderedSnippetFileContent = $this->twigSnippetFileProcessor->process(
                 $snippetFileTemplatePath,
                 $variables
             );
 
-            $applier->apply($modulePath, $snippetTemplatePath, $snippetFilePath, $renderedSnippetFileContent);
+            $snippetFileTemplatePath = str_replace($snippetName, '', $snippetFileTemplatePath);
+            $snippetFileTemplatePath = str_replace('.twig', '', $snippetFileTemplatePath);
+
+            $applier->apply(
+                $modulePath,
+                $snippetTemplatePath,
+                $snippetFileTemplatePath,
+                $renderedSnippetFileContent
+            );
+
+            $io->writeln(
+                sprintf('Created file: %s', substr($snippetFileTemplatePath, 2))
+            );
+        }
+
+        return;
+
+
+        // apply snippet
+        if (false) {
+            $snippetConfig = $this->snippetConfigLoader->load($snippetName);
+
+            $snippetFiles = $snippetConfig['files'] ?? [];
+            $snippetTemplatePath = $snippetConfig['templatePath'] ?? null;
+
+            // validate generating snippet
+            foreach ($snippetFiles as $snippetFilePath => $snippetFileConfig) {
+
+            }
+
+            foreach ($snippetFiles as $snippetFilePath => $snippetFileConfig) {
+                /** @var ApplierInterface $applier */
+                $applier = $this->container->get($snippetFileConfig['applier']);
+                $snippetFileTemplatePath = sprintf('%s/%s.twig', $snippetTemplatePath, $snippetFilePath);
+
+                $renderedSnippetFileContent = $this->twigSnippetFileProcessor->process(
+                    $snippetFileTemplatePath,
+                    $variables
+                );
+
+                $applier->apply($modulePath, $snippetTemplatePath, $snippetFilePath, $renderedSnippetFileContent);
+            }
         }
     }
 }

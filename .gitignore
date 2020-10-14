@@ -29,4 +29,4 @@ composer.lock
 ### Builds
 build/*
 !build/.gitkeep
-
+vendor/

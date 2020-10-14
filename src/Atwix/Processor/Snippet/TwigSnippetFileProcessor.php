@@ -17,7 +17,7 @@ class TwigSnippetFileProcessor
     /**
      * @var TwigEnvironmentWrapper
      */
-    protected $twigEnvironment;
+    protected TwigEnvironmentWrapper $twigEnvironment;
 
     /**
      * @param TwigEnvironmentWrapper $twigEnvironment

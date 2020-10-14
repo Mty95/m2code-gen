@@ -13,7 +13,7 @@ You just need to think about bussiness logic, routine will be reduced.
 
 ### Module
 
-* `module:new` - add a new theme
+* `module:new` - add a new module
 
 ### API
 
@@ -56,6 +56,12 @@ You just need to think about bussiness logic, routine will be reduced.
 * Roman Glushko [@roma-glushko](https://github.com/roma-glushko) 
 
 Being made with love by [Atwix team](https://www.atwix.com/) ❤️
+
+## Changelog
+
+- Ported dependencies to Symfony 5+
+- Remade module:new command
+- Added some classes from Staempfli\UniversalGenerator package
 
 ## License
 

@@ -1,0 +1,9 @@
+#!/usr/bin/env php
+<?php
+require_once __DIR__ . '../../vendor/autoload.php';
+
+define('BP', dirname(__DIR__));
+
+$application = new \Atwix\System\Application(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'src');
+
+$application->lunch();

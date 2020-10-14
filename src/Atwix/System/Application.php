@@ -13,6 +13,7 @@ use Atwix\System\Filesystem\DirectoryLocator;
 use Atwix\System\Twig\TwigLoader;
 use Exception;
 use Symfony\Component\Console\Application as ConsoleApplication;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\CommandLoader\ContainerCommandLoader;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -21,7 +22,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 class Application
 {
-    const APP_NAME = 'm2code-gen';
+    const APP_NAME = 'M2 Code Generator by @mty95';
 
     const APP_VERSION = '0.1.0';
 
@@ -64,6 +65,7 @@ class Application
         $this->containerBuilder = $this->getDiContainer();
         $this->containerBuilder->setParameter('env.rootPath', $this->rootDir);
 
+        $this->containerBuilder->registerForAutoconfiguration(Command::class)->addTag('console.command');
         $this->containerBuilder->compile();
 
         $this->consoleApplication = $this->getConsoleApplication();
@@ -90,8 +92,9 @@ class Application
         $consoleApplication = new ConsoleApplication(static::APP_NAME, static::APP_VERSION);
 
         $commandLoader = new ContainerCommandLoader($this->containerBuilder, [
-            'module:new' => GenerateNewModuleCommand::class,
+            'module:old' => GenerateNewModuleCommand::class,
             'adminhtml:acl' => GenerateAdminhtmlAclCommand::class,
+            \App\Command\Module\CreateModuleCommand::NAME => \App\Command\Module\CreateModuleCommand::class,
         ]);
 
         $consoleApplication->setCommandLoader($commandLoader);

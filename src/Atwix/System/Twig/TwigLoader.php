@@ -7,8 +7,8 @@
 
 namespace Atwix\System\Twig;
 
-use Twig_Environment;
-use Twig_Loader_Filesystem;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 /**
  * Class TwigLoader
@@ -18,13 +18,12 @@ class TwigLoader
     /**
      * @param string $templateDirPath
      *
-     * @return Twig_Environment
+     * @return Environment
      */
-    public function load(string $templateDirPath): Twig_Environment
+    public function load(string $templateDirPath): Environment
     {
-        $twigLoader = new Twig_Loader_Filesystem($templateDirPath);
-        $twigEnvironment = new Twig_Environment($twigLoader);
+        $twigLoader = new FilesystemLoader($templateDirPath);
 
-        return $twigEnvironment;
+        return new Environment($twigLoader);
     }
 }

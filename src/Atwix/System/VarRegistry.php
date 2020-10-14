@@ -38,7 +38,7 @@ class VarRegistry
             return $this->varRegistry[$name];
         }
 
-        return null;
+        return '';
     }
 
     /**
